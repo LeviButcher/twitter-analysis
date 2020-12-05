@@ -1,4 +1,4 @@
-const stopWords = require("../stopwords.json"); // From https://github.com/Alir3z4/stop-words/blob/master/english.txt
+const stopWords = require("../stopwords.json");
 const natural = require("natural");
 const { lemmatizer } = require("lemmatizer");
 
@@ -24,16 +24,28 @@ const cleanTextRegex = [
 
 const replaceWithEmptyString = (text, regex) => text.replace(regex, "");
 
-// Removes Urls, UserNames, emojis, punctuation, and newlines from text
-const cleanTweetText = (text) => {
-  const res = cleanTextRegex.reduce(replaceWithEmptyString, text);
-  return res.split(matchNewlines).join(" ").trim();
-};
+/*
+  cleanTweetText
+  Removes Urls, UserNames, emojis, punctuation, and newlines from text
 
+  Returns: string with No, Urls, UserNames, emojis, punctuation, and newlines
+*/
+const cleanTweetText = (text) =>
+  cleanTextRegex
+    .reduce(replaceWithEmptyString, text)
+    .split(matchNewlines)
+    .join(" ")
+    .trim();
+
+// Checks if word is a stop word from list of common stop words
 const isStopWord = (word) =>
   stopWords.some((common) => common.toLowerCase() === word.toLowerCase());
 
-const notStopWord = (w) => !isStopWord(w);
+const compose = (f) => (g) => (input) => f(g(input));
+
+const not = (bool) => !bool;
+
+const notStopWord = compose(not)(isStopWord);
 
 const removeStopWords = (wordTokens) => wordTokens.filter(notStopWord);
 
@@ -56,6 +68,7 @@ const cleanTweetObjectPlusExtras = (tweet) => {
   };
 };
 
+// Returns an array of unique items from input array
 const uniques = (arr) =>
   arr.reduce(
     (acc, curr) => (acc.some((x) => x === curr) ? acc : [...acc, curr]),
@@ -65,27 +78,21 @@ const uniques = (arr) =>
 const count = (f, arr) =>
   arr.reduce((acc, curr) => (f(curr) ? acc + 1 : acc), 0);
 
+// Returns an array of tuples of (item, count) based on input array
 const occurrenceCount = (arr) => {
   const u = uniques(arr);
   return u.map((uu) => [uu, count((c) => c === uu, arr)]);
 };
 
-const zip = (arr1, arr2) => {
-  const [a, ...aa] = arr1;
-  const [b, ...bb] = arr2;
+const zip = ([a, ...aa], [b, ...bb]) => {
   if (aa.length == 0 || bb.length == 0) return [];
   return [[a, b], ...zip(aa, bb)];
 };
 
 // Flatten out Response
-const cleanTweetApiData = (tweetData) => {
-  const {
-    data,
-    includes: { users },
-  } = tweetData;
-
-  return zip(data, users)
-    .map((arr) => ({ ...arr[1], ...arr[0] }))
+const cleanTweetApiData = ({ data, includes: { users } }) =>
+  zip(data, users)
+    .map(([tweet, user]) => ({ ...user, ...tweet }))
     .map((x) => {
       const { public_metrics } = x;
       delete x.public_metrics;
@@ -96,15 +103,12 @@ const cleanTweetApiData = (tweetData) => {
         ...public_metrics,
       };
     });
-};
 
-const getTweetSentiment = (cleanedTweet) => {
-  return {
-    ...cleanedTweet,
-    polarity: 0,
-    subjectivity: analyser.getSentiment(cleanedTweet.stemming),
-  };
-};
+const getTweetSentiment = (cleanedTweet) => ({
+  ...cleanedTweet,
+  polarity: 0,
+  subjectivity: analyser.getSentiment(cleanedTweet.stemming),
+});
 
 module.exports = {
   cleanTweetText,

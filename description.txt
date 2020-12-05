@@ -1,5 +1,10 @@
-I searched for tweets that mention are directed to Elon Musk. I just picked him because I know he gets a lot of tweets and I'd rather not use Trump.
+I searched for tweets that are directed to Elon Musk. I just picked him because I know he gets a lot of tweets.
 
 I performed both sentiment analysis and engagement. Sadly, the library I used for sentiment analysis didn't have a polarity score so I decided to just go ahead and do the engagement as well. I find it strange that most of these tweets have no likes but a ton of retweets. The top performers in the engagement csv all have 0 likes. I guess people don't use this features as much? I prefer to like over retweet personally.
 
 Also, I will highlight that my code is written in node/javascript as compared to python or some other language. I would say my best language is javascript which is why I choose it. Also, I try to write my code in a the style of Functional Programming so if you are unfamiliar with it then my code may seem odd to you. Basically, in FP you try to write as many small pure functions as possible then compose then together to solve complex problems. A pure function is one that given the same input always gives the same output. If I had enough time I would of actually tried to do this in scala or haskell but I decided to go with speed for this.
+
+Running Project Commands:
+npm install - installs dependencies
+npm start - Runs Project
+npm test - Runs Tests

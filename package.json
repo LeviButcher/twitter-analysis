@@ -1,7 +1,7 @@
 {
   "name": "twitter-analysis",
   "version": "1.0.0",
-  "description": "",
+  "description": "Downloads Twitter Data",
   "main": "index.js",
   "scripts": {
     "test": "jest --watch",

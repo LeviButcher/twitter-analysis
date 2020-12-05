@@ -3,6 +3,8 @@ require("dotenv").config();
 
 token = process.env.TWITTER_BEARER_TOKEN;
 
+if (!token) throw new Error("env var:TWITTER_BEARER_TOKEN not set");
+
 const twitterUrl = "https://api.twitter.com/2/tweets/search/recent?query=";
 
 const fetchTweets = (query, maxResults, nextToken) =>
@@ -20,13 +22,22 @@ const fetchTweets = (query, maxResults, nextToken) =>
     }
   );
 
-// Return Promise of array data
+/*
+    fetchManyTweetResults
+
+    Query twitter api with the query passed in and get next results nMany time
+
+    Returns: Array of Twitter Api Result Objects
+*/
 const fetchManyTweetResults = async (query, maxResults, nMany, nextToken) => {
   if (maxResults < 10 || nMany > 100)
     throw Promise.reject("maxResults not in range 10 - l00");
   if (nMany < 1) throw Promise.reject("nMany cannot be less then 1");
   const res = await fetchTweets(query, maxResults, nextToken);
   const { meta, ...data } = await res.json();
+
+  // Handle Response failure
+  if (data.status) return [];
 
   if (meta.next_token && nMany > 1) {
     const next = await fetchManyTweetResults(

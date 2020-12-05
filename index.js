@@ -9,18 +9,19 @@ const {
 } = require("./src/utils");
 const { fetchManyTweetResults } = require("./src/twitterApi.js");
 
+// Change these variables to get different twitter data
 const query =
   "@elonmusk -is:retweet lang:en&tweet.fields=created_at,public_metrics&expansions=author_id&user.fields=username";
-
 const amountDownloadedPerCall = 50;
 const timesToDownload = 5;
 
 const writeDataAsCSV = (fileName, data) => {
   const csv = json2csv.parse(data);
-  fs.writeFileSync(fileName, csv, () => console.log("Success"));
+  fs.writeFileSync(fileName, csv);
 };
 
 async function main() {
+  // 1.b Fetch Twitter Data, write to tweets.csv
   const rawData = await fetchManyTweetResults(
     query,
     amountDownloadedPerCall,
@@ -29,33 +30,38 @@ async function main() {
   const data = rawData.flatMap(cleanTweetApiData);
   writeDataAsCSV("tweets.csv", data);
 
+  // 1.d-h Clean Twitter Data, write to cleantokens.csv
   const cleanedData = data.map(cleanTweetObjectPlusExtras);
   writeDataAsCSV("cleantokens.csv", cleanedData.map(cleanForTokenCSV));
 
+  // 1.i Count lemmatized word instances, write to frequency.csv
   const lemTokens = cleanedData.flatMap((c) => c.lemmatized);
   const occurrences = occurrenceCount(lemTokens)
-    .map((o) => ({
-      word: o[0],
-      count: o[1],
+    .map(([word, count]) => ({
+      word,
+      count,
     }))
     .sort((a, b) => b.count - a.count);
-
   writeDataAsCSV("frequency.csv", occurrences);
 
-  // Sentiments Analysis
+  // 1.j.1 Sentiment Analysis, writes to sentiments.csv (Doesn't record polarity)
   const sentiments = cleanedData
     .map(getTweetSentiment)
     .map(cleanForSentimentCSV);
   writeDataAsCSV("sentiments.csv", sentiments);
 
-  // j.2 10 most important users
+  // 1.j.2 Most important users, writes to engagements.csv
   const engagementData = uniques(cleanedData.map((x) => x.username))
     .map((x) => [x, cleanedData.filter((t) => t.username === x)])
-    .flatMap((x) => x[1].reduce(addToCounter, newCounter(x[0])))
+    .flatMap(([username, tweets]) =>
+      tweets.reduce(addToCounter, newCounter(username))
+    )
     .sort((a, b) => b.totalEngagement - a.totalEngagement)
     .slice(0, 10);
   writeDataAsCSV("engagement.csv", engagementData);
 }
+
+// Clean up Functions to remove properties
 
 const cleanForSentimentCSV = (tweet) => ({
   id: tweet.id,
