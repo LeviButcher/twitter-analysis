@@ -22,9 +22,11 @@ const fetchTweets = (query, maxResults, nextToken) =>
 
 // Return Promise of array data
 const fetchManyTweetResults = async (query, maxResults, nMany, nextToken) => {
-  if (nMany < 1) throw Promise.reject("nMany too small");
+  if (maxResults < 10 || nMany > 100)
+    throw Promise.reject("maxResults not in range 10 - l00");
+  if (nMany < 1) throw Promise.reject("nMany cannot be less then 1");
   const res = await fetchTweets(query, maxResults, nextToken);
-  const { data, meta } = await res.json();
+  const { meta, ...data } = await res.json();
 
   if (meta.next_token && nMany > 1) {
     const next = await fetchManyTweetResults(
@@ -33,10 +35,11 @@ const fetchManyTweetResults = async (query, maxResults, nMany, nextToken) => {
       nMany - 1,
       meta.next_token
     );
-    return [...data, ...next];
+
+    return [data, ...next];
   }
 
-  return data;
+  return [data];
 };
 
 module.exports = { fetchManyTweetResults, fetchTweets };

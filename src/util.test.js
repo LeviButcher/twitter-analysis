@@ -1,7 +1,7 @@
 const { TestScheduler } = require("jest");
 const {
   cleanTweetText,
-  tokenizeAndRemoveCommonWords,
+  tokenizeAndRemoveStopWords,
   uniques,
   occurrenceCount,
 } = require("./utils");
@@ -9,27 +9,27 @@ const {
 describe("cleanTweetText", () => {
   test("Removes urls from string", () => {
     const res = cleanTweetText("http://google.com hello");
-    expect(res).toBe(" hello");
+    expect(res).toBe("hello");
   });
 
   test("Removes secure urls from string", () => {
     const res = cleanTweetText("https://ebay.com hello");
-    expect(res).toBe(" hello");
+    expect(res).toBe("hello");
   });
 
   test("Removes multiple urls", () => {
     const res = cleanTweetText("https://ebay.com then go to http://google.com");
-    expect(res).toBe(" then go to ");
+    expect(res).toBe("then go to");
   });
 
   test("Removes @user from string", () => {
     const res = cleanTweetText("@elonmusk U mean @DemolitionRanch");
-    expect(res).toBe(" U mean ");
+    expect(res).toBe("U mean");
   });
 
   test("Removes emoji's from text", () => {
     const res = cleanTweetText("Just for another brother 🙏🏽");
-    expect(res).toBe("Just for another brother ");
+    expect(res).toBe("Just for another brother");
   });
 
   test("Remove punctuation from text", () => {
@@ -49,8 +49,8 @@ describe("cleanTweetText", () => {
 
 describe("tokenizeAndRemoveCommonWords", () => {
   test("Text is returned as array", () => {
-    const res = tokenizeAndRemoveCommonWords("Hey there stranger how it be");
-    expect(res).toEqual(["Hey", "there", "stranger", "how"]);
+    const res = tokenizeAndRemoveStopWords("Hey there stranger how it be");
+    expect(res).toEqual(["Hey", "stranger"]);
   });
 });
 
