@@ -27,6 +27,15 @@ const fetchTweets = (query, maxResults, nextToken) =>
 
     Query twitter api with the query passed in and get next results nMany time
 
+    Twitter Api Result Format: {
+      data: [
+
+      ],
+      includes: {
+
+      }
+    }
+
     Returns: Array of Twitter Api Result Objects
 */
 const fetchManyTweetResults = async (query, maxResults, nMany, nextToken) => {
